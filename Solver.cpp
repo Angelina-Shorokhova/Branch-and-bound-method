@@ -29,40 +29,48 @@ double Solver::max_price(int first){
 }
 
 double Solver::upper_bound(int el_v,int el_w,int num){
-    return el_v+ (K-el_w)*max_price(num);
+    if(el_w>=K) return 0;
+    int num1=num+1;
+    while ((num1<n)&&(w[num1]+el_w<=K)){
+      el_w+=w[num1];
+      el_v+=v[num1];
+      num1+=1;
+    }
+    if(num1<n)
+    el_v+=(K-el_w)*v[num1]/w[num1];
+    return el_v;
 }
 
 
 Solver::Solver(string f_name): Parser(f_name){
-list<elem> tree={};
-list<elem>::iterator it;
-int t_w=0,t_v=0;
-Solver::elem t;
-t=create(t_v,t_w,0,upper_bound(t_v,t_w,0));
+vector<elem> tree={};
+vector<elem>::iterator it;
+int t_w=0,t_v=0,great_val=0,ind2;
+elem t,t2;
+t=create(t_v,t_w,-1,0);
 tree.push_back(t);
-for(int i=0;i<n;i++){
-  tree.sort(compare);
-  tree.pop_front();
-  t=create(t_v,t_w,i+1,upper_bound(t_v,t_w,i));
-  if(t_w<K) tree.push_back(t);
-  else t.ub=0;
-  t_v+=v[i];
-  t_w+=w[i];
-  t=create(t_v,t_w,i+2,upper_bound(t_v,t_w,i));
-  if(t_w<K) tree.push_back(t);
-  else t.ub=0;
+while(tree.size()>0){
+   t=tree[0];
+   tree.erase(tree.begin());
+   ind2=t.ind+1;
+   if(t.ind==-1) ind2=0;
+   t2=create(t.v+v[ind2],t.w+w[ind2],ind2,upper_bound(t.v+v[ind2],t.w+w[ind2],ind2));
+   if((t2.v>great_val)&&(t2.w<=K)) great_val=t2.v;
+   if(t2.ub>great_val) tree.push_back(t2);
+   t2.w=t.w;
+   t2.v=t.v;
+   t2.ub=upper_bound(t_v,t_w,ind2);
+   if(t2.ub>great_val) tree.push_back(t2);
 }
-tree.sort(compare);
-it=tree.begin();
+
+/* it=tree.begin();
 cout<<"t_v= "<<it->v<<endl;
 cout<<"t_w= "<<it->w<<endl;
 cout<<"num= "<<it->ind<<endl;
 cout<<"ub= "<<it->ub<<endl;
-for (it=tree.begin();it!=tree.end();it++)
-  cout<<it->v<<" ";
-cout<<endl;
+*/
 
-
+cout<<"sum value="<<great_val<<endl;
 
 
 }
